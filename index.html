@@ -1,0 +1,310 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<title>Что делать если JIRA работает недостаточно быстро?</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=792, user-scalable=no">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<link rel="stylesheet" href="shower/themes/ribbon/styles/screen.css">
+</head>
+<body class="list">
+	<header class="caption">
+		<h1>Что делать если JIRA работает недостаточно быстро?</h1>
+		<p>Андрей Ларионов, ALM Works</p>
+	</header>
+	<section class="slide cover" id="Cover"><div>
+		<h2>Что делать если JIRA работает недостаточно быстро?</h2>
+		<p>Немного из жизни Джировода в отставке</p>
+		<!--
+			To apply styles to the certain slides
+			set slide ID to get needed elements
+			-->
+		<style>
+			#Cover h2 {
+				margin:30px 0 0;
+				color:#FFF;
+				text-align:center;
+				font-size:70px;
+				}
+			#Cover p {
+				margin:10px 0 0;
+				text-align:center;
+				color:#FFF;
+				font-style:italic;
+				font-size:20px;
+				}
+				#Cover p a {
+					color:#FFF;
+					}
+		</style>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Яндекс</h2>
+		<ul>
+			<li>С 2008 года в течении четырех лет моей основной работой было развитие,
+				оптимизация и расширение Atlassian JIRA в компании Яндекс.</li>
+			<li>За это время я досконально изучил кодовую базу JIRA с версии&nbsp;3.13&nbsp;до&nbsp;5.2</li>
+			<li>На тот момент это была одна из самых больших инсталляций JIRA по объему данных</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>ALM Works</h2>
+		<ul>
+			<li>Консультировал компанию ALMWorks при создании их знаменитого плагина Structure</li>
+			<li>На сегодняшний день я в рамках сотрудничества с ALMWorks разрабатываю мобильное приложение PocketDesk</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Что такое проблемы с производительностью?</h2>
+		<ul>
+			<li>Когда пользователю кажется, что программа работает медленнее чем он того ожидает</li>
+			<li>Когда программа работает медленнее чем другая похожая программа</li>
+			<li>Когда программа начинает работать медленнее по мере увеличения объема данных</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Что такое проблемы с производительностью?</h2>
+		<ul>
+			<li>Когда программа начинает работать медленнее, по мере увеличения кол-ва, одновременно выполняемых операций.</li>
+			<li>Когда программа «внезапно» начинает работать медленнее, чем раньше</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Каковы же основные причины проблем?</h2>
+		<ul>
+			<li>Thread Pool</li>
+			<li>Plugin System</li>
+			<li>Garbage Collector</li>
+			<li>Cache</li>
+			<li>Lock Contention</li>
+			<li>Bugs</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Thread Pool</h2>
+		<ul>
+			<li>Нередко запрос прежде чем начать обрабатывать ожидает пока закончится обрабатываться другой запрос</li>
+			<li>Большой пул – плохо</li>
+			<li>Маленький пул – плохо</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Plugin System</h2>
+		<p>За гибкость надо платить</p>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Garbage collector</h2>
+		<ul>
+			<li>Некоторые данные «живут» дольше чем нужно</li>
+			<li>Некоторые данные «живут» меньше чем хотелось бы</li>
+			<li>Полная сборка мусора иногда создает лавиноподобную нагрузку</li>
+			<li>Полная сборка мусора останавливает работу JIRA целиком</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Cache</h2>
+		<ul>
+			<li>Что бы лишний раз не обращаться к хранилищу данных, мы поместим редко изменяющиеся данные в память</li>
+			<li>Зачем усложнять себе жизнь сложной схемой инвалидации, если можно опустошить кэш целиком?</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Lock Contention</h2>
+		<ul>
+			<li>Иногда потоки обработки выстраиваются в очередь</li>
+			<li>Иногда это оправдано</li>
+			<li>Иногда это не оправдано</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Что делать?</h2>
+		<ul>
+			<li>Бесплатно</li>
+			<li>Дешево и сердито</li>
+			<li>Дорого</li>
+			<li>Очень дорого</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Бесплатно</h2>
+		<ul>
+			<li>Обновляться до последней доступной версии</li>
+			<li>Писать в Support</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Как писать в Support</h2>
+		<ul>
+			<li>Быть готовым к идиотским вопросам</li>
+			<li>Быть готовым к тому, что это может занять очень много времени</li>
+			<li>Максимально конкретизировать запрос</li>
+			<li>Быть настойчивым</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Дешево и сердито</h2>
+		<ul>
+			<li>Закэшировать статику «намертво»</li>
+			<li>Купить максимально производительное железо</li>
+			<li>Отключить расширения в которых вы не уверены</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Кэширование статики</h2>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Дорого</h2>
+		<ul>
+			<li>Выделить человека с хорошим знанием Java для исследования причин низкой производительности</li>
+			<li>Найти причину и разработать решение, устраняющее ее</li>
+			<li>Поддерживать это решение</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Примеры дорогих решений</h2>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Очень дорого</h2>
+		<p>Нанять эксперта и попросить сделать «хорошо»</p>
+	</div></section>
+	<section class="slide shout"><div>
+		<h2>Спасибо за внимание</h2>
+	</div></section>
+	<section class="slide shout"><div>
+		<h2>AMA</h2>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Shower Key Features</h2>
+		<ol>
+			<li>Built on HTML, CSS and vanilla JavaScript</li>
+			<li>All modern browsers are supported</li>
+			<li>Slide themes are separated from engine</li>
+			<li>Fully keyboard accessible</li>
+			<li>Printable to PDF</li>
+		</ol>
+		<p class="note">Shower ['ʃəuə] noun. A person or thing that shows.</p>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Plain Text on Your Slides</h2>
+		<p>Lorem ipsum dolor sit amet, consectetur <a href="#4">adipisicing</a> elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, <em>quis nostrud</em> exercitation ullamco laboris <strong>nisi ut aliquip</strong> ex ea commodo consequat. Duis aute irure <i>dolor</i> in reprehenderit in voluptate velit esse cillum <b>dolore</b> eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in <code>&lt;culpa&gt;</code> qui officia deserunt mollit anim id est laborum.</p>
+	</div></section>
+	<section class="slide"><div>
+		<h2>All Kind of Lists</h2>
+		<ol>
+			<li>Simple lists are marked with bullets</li>
+			<li>Ordered lists begin with a number</li>
+			<li>You can even nest lists one inside another
+				<ul>
+					<li>Or mix their types</li>
+					<li>But do not go too far</li>
+					<li>Otherwise audience will be bored</li>
+				</ul>
+			</li>
+			<li>Look, seven rows exactly!</li>
+		</ol>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Serious Citations</h2>
+		<figure>
+			<blockquote>
+				<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia.</p>
+			</blockquote>
+			<figcaption>Marcus Tullius Cicero</figcaption>
+		</figure>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Code Samples</h2>
+		<pre>
+			<code>&lt;!DOCTYPE html&gt;</code>
+			<code>&lt;html lang="en"&gt;</code>
+			<code><mark>&lt;head&gt;</mark> <mark class="comment">&lt;!--Comment--&gt;</mark></code>
+			<code>    &lt;title&gt;Shower&lt;/title&gt;</code>
+			<code>    &lt;meta charset="<mark class="important">UTF-8</mark>"&gt;</code>
+			<code>    &lt;link rel="stylesheet" href="screen.css"&gt;</code>
+			<code><mark>&lt;/head&gt;</mark></code>
+		</pre>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Even Tables</h2>
+		<table>
+		<tr>
+			<th scope="col">Locavore</th>
+			<th>Umami</th>
+			<th>Helvetica</th>
+			<th>Vegan</th>
+		</tr>
+		<tr>
+			<th scope="row">Fingerstache</th>
+			<td>Kale</td>
+			<td>Chips</td>
+			<td>Keytar</td>
+		</tr>
+		<tr>
+			<th scope="row">Sriracha</th>
+			<td>Gluten-free</td>
+			<td>Ennui</td>
+			<td>Keffiyeh</td>
+		</tr>
+		<tr>
+			<th scope="row">Thundercats</th>
+			<td>Jean</td>
+			<td>Shorts</td>
+			<td>Biodiesel</td>
+		</tr>
+		<tr>
+			<th scope="row">Terry</th>
+			<td>Richardson</td>
+			<td>Swag</td>
+			<td>Blog</td>
+		</tr>
+		</table>
+		<p>It’s good to have information organized.</p>
+	</div></section>
+	<section class="slide cover" id="Picture"><div>
+		<h2>Pictures</h2>
+		<img src="pictures/picture.jpg" alt="">
+		<style>
+			#Picture h2 {
+				color:#FFF;
+				}
+		</style>
+	</div></section>
+	<section class="slide shout"><div>
+		<h2>You can even shout this way</h2>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Inner Navigation</h2>
+		<ol>
+			<li>Lets you reveal list items one by one</li>
+			<li class="next">To keep some key points</li>
+			<li class="next">In secret from audience</li>
+			<li class="next">But it will work only once</li>
+			<li class="next">Nobody wants to see the same joke twice</li>
+		</ol>
+	</div></section>
+	<section class="slide shout" id="SeeMore"><div>
+		<h2><img src="pictures/logo.svg" alt=""> <a href="https://github.com/shower/shower">See more on GitHub</a></h2>
+		<style>
+			#Picture h2 {
+				color:#FFF;
+				}
+			#SeeMore h2 {
+				font-size:100px
+				}
+			#SeeMore img {
+				width:0.72em;
+				height:0.72em;
+				}
+		</style>
+	</div></section>
+	<p class="badge"><a href="https://github.com/shower/shower">Fork me on Github</a></p>
+	<!--
+		To hide progress bar from entire presentation
+		just remove “progress” element.
+		-->
+	<div class="progress"><div></div></div>
+	<script src="shower/shower.min.js"></script>
+	<!-- Copyright © 2014 Yours Truly, Famous Inc. -->
+	<!-- Photos by John Carey, fiftyfootshadows.net -->
+</body>
+</html>
