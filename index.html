@@ -55,21 +55,6 @@
 		</ul>
 	</div></section>
 	<section class="slide"><div>
-		<h2>Что такое проблемы с производительностью?</h2>
-		<ul>
-			<li>Когда пользователю кажется, что программа работает медленнее чем он того ожидает</li>
-			<li>Когда программа работает медленнее чем другая похожая программа</li>
-			<li>Когда программа начинает работать медленнее по мере увеличения объема данных</li>
-		</ul>
-	</div></section>
-	<section class="slide"><div>
-		<h2>Что такое проблемы с производительностью?</h2>
-		<ul>
-			<li>Когда программа начинает работать медленнее, по мере увеличения кол-ва, одновременно выполняемых операций.</li>
-			<li>Когда программа «внезапно» начинает работать медленнее, чем раньше</li>
-		</ul>
-	</div></section>
-	<section class="slide"><div>
 		<h2>Каковы же основные причины проблем?</h2>
 		<ul>
 			<li>Thread Pool</li>
@@ -149,8 +134,25 @@
 			<li>Отключить расширения в которых вы не уверены</li>
 		</ul>
 	</div></section>
-	<section class="slide"><div>
+	<section class="slide" id="static"><div>
 		<h2>Кэширование статики</h2>
+		<pre><code>proxy_cache_path  /var/cache/nginx/jira levels=1:2 keys_zone=jira:32m max_size=1000m inactive=60m;
+
+location ~* ^/s/(.*)/_/(.*)(gif|jpg|jpeg|js|css|png)$ {
+	expires     max;
+	add_header  Cache-Control public;
+	more_clear_headers 'Last-Modified' 'ETag';
+	proxy_next_upstream error timeout http_404 http_500;
+	proxy_pass http://jira-server;
+	proxy_cache jira-bugs;
+	proxy_cache_key  "$request_uri";
+	proxy_cache_valid 200;
+}</code></pre>
+		<style>
+			#static code {
+				font-size: 14px;
+			}
+		</style>
 	</div></section>
 	<section class="slide"><div>
 		<h2>Дорого</h2>
@@ -161,11 +163,121 @@
 		</ul>
 	</div></section>
 	<section class="slide"><div>
-		<h2>Примеры дорогих решений</h2>
-	</div></section>
-	<section class="slide"><div>
 		<h2>Очень дорого</h2>
 		<p>Нанять эксперта и попросить сделать «хорошо»</p>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Как это делаю я</h2>
+		<ul>
+			<li>Сбор данных</li>
+			<li>«Танк»</li>
+			<li>Мишень</li>
+		</ul>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Сбор данных</h2>
+		<ul>
+			<li>Access логи веб-сервера</li>
+			<li>Логи работы GC</li>
+			<li>Thread Dumps</li>
+			<li>Профайлер</li>
+		</ul>
+	</div></section>
+	<section class="slide" id="log"><div>
+		<h2>Формат Access лога</h2>
+		<pre><code>
+log_format  jira  '$remote_addr - $remote_user [$time_local] "$request" '
+			'$status $body_bytes_sent "$http_referer" "$http_user_agent" "$host,$server_port" '
+			'"$http_x_forwarded_for" "$http_cookie" 0 "$request_time" "$gzip_ratio" '
+			'"$upstream_addr" $upstream_status $upstream_response_time';
+access_log  /var/log/jira/jira.access.log jira;
+		</code></pre>
+		<style>
+			#log code {
+				font-size: 14px;
+			}
+		</style>
+	</div></section>
+	<section class="slide" id="gccmd"><div>
+		<h2>Логи работы GC</h2>
+		<pre><code>GCLOG_OPTION="-XX:+PrintGCTimeStamps \
+-XX:+PrintGCDetails \
+-verbose:gc \
+-XX:+PrintGCApplicationStoppedTime\
+-XX:+PrintGCApplicationConcurrentTime\
+-Xloggc:$CATALINA_HOME/logs/jiragc-$(date +%Y%m%d-%H%M%S).log"
+
+JAVA_OPTS="$GCLOG_OPTION $JAVA_OPTS"
+		</code></pre>
+		<style>
+			#gccmd code {
+				font-size: smaller;
+			}
+		</style>
+	</div></section>
+	<section class="slide" id="tdumps"><div>
+		<h2>Thread Dumps</h2>
+		<pre><code>#!/bin/bash
+if [ -f /var/run/jira/jira.pid ] ; then
+	LOG_FILE=/var/log/jira/threads_dump.log.gz
+	DATE=$(date +%Y%m%d-%H%M%S)
+	( if flock -ne 200; then
+			PID=$(cat /var/run/jira/jira.pid)
+			JSTACK=$(cat /proc/${PID}/cmdline | strings | head -1 | xargs -I {} dirname {})/jstack
+			echo "=== threads dump: pid=$PID timestamp=$DATE ===" | gzip >> $LOG_FILE
+			$JSTACK $PID 2>&1 | gzip >> $LOG_FILE
+		else
+			echo "[$DATE] thread dump process already running" >> /var/log/jira/threads_dump_run.log
+		fi
+	) 200>>$LOG_FILE
+fi</code></pre>
+		<style>
+			#tdumps code {
+				font-size: 12px;
+			}
+		</style>
+	</div></section>
+	<section class="slide" id="prof"><div>
+		<h2>Профайлер</h2>
+		<pre><code>YJP_VERSION=11.0.8
+YJP_HOME=$CATALINA_HOME/bin/yjp-$YJP_VERSION
+YJP_JAVA_OPTS="-agentlib:yjpagent=dir=/tmp/ -agentlib:yjpagent=disableexceptiontelemetry"
+
+# Specify path to proper version of profiler agent library, depending on the OS
+if [ `uname` = 'Linux' ] ; then
+	if [ "`uname -a | grep x86_64`" ] ; then
+		# Assume Linux AMD 64 has 64-bit Java
+		export LD_LIBRARY_PATH="$YJP_HOME/linux-x86-64:$LD_LIBRARY_PATH"
+	else
+		# 32-bit Java
+		export LD_LIBRARY_PATH="$YJP_HOME/linux-x86-32:$LD_LIBRARY_PATH"
+	fi
+else
+	YJP_JAVA_OPTS=""
+	echo "Unsupported platform for YourKit profiler: `uname`"
+fi
+JAVA_OPTS="$YJP_JAVA_OPTS $JAVA_OPTS"
+		</code></pre>
+		<style>
+			#prof code {
+				font-size: 10px;
+			}
+		</style>
+	</div></section>
+	<section class="slide shout"><div>
+		<h2><a href="https://github.com/yandex/yandex-tank">«Танк»</a></h2>
+	</div></section>
+	<section class="slide"><div>
+		<h2>Как все это использовать?</h2>
+		<ol>
+			<li>Выбираем интересующий нас URL или группу</li>
+			<li>Развертываем мишень и танк. Генерируем патронную ленту для танка</li>
+			<li>Стреляем первый раз, что бы оценить пиковую производительность</li>
+			<li>Стреляем под сэмплирующим профайлером</li>
+			<li>Стреляем под трасирующим профайлером</li>
+			<li>Вносим измеения</li>
+			<li>Повторяем и сравниваем</li>
+		</ol>
 	</div></section>
 	<section class="slide shout"><div>
 		<h2>Спасибо за внимание</h2>
